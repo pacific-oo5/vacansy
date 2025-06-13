@@ -19,33 +19,70 @@ function App() {
   const [vacancies, setVacancies] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const handleSearch = async (query) => {
+  // Универсальная функция для загрузки вакансий с параметрами фильтрации
+  const fetchVacancies = async (filterParams = {}) => {
     setLoading(true);
     try {
-      const url = query.trim()
-        ? `/api/vacancies/?search=${encodeURIComponent(query)}`
-        : `/api/vacancies/`;
+      // Создаем query string из объекта параметров
+      const query = new URLSearchParams(filterParams).toString();
+      const url = query ? `/api/vacancies/?${query}` : `/api/vacancies/`;
       const res = await axios.get(url);
       const data = Array.isArray(res.data) ? res.data : res.data.results || [];
       setVacancies(data);
     } catch (err) {
-      console.error("Ошибка при поиске:", err);
+      console.error("Ошибка при загрузке вакансий:", err);
       setVacancies([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Загружаем все вакансии при старте
+  // Обработка поиска (просто обертка для fetchVacancies)
+  const handleSearch = (query) => {
+    fetchVacancies({ search: query });
+  };
+
+  // Функция, которую передадим в Main для фильтрации по зарплате, графику и т.д.
+  const handleFilterUpdate = (queryString) => {
+    // Пример queryString: "?salary__gte=10000&salary__lte=50000&work_time=Гибкий график"
+    // Нужно преобразовать в объект, чтобы передать в fetchVacancies
+    const params = {};
+    if (queryString.startsWith("?")) {
+      const urlParams = new URLSearchParams(queryString.substring(1));
+      urlParams.forEach((value, key) => {
+        // Если параметр уже есть, превращаем его в массив, чтобы поддержать несколько значений
+        if (params[key]) {
+          if (Array.isArray(params[key])) {
+            params[key].push(value);
+          } else {
+            params[key] = [params[key], value];
+          }
+        } else {
+          params[key] = value;
+        }
+      });
+    }
+    fetchVacancies(params);
+  };
+
   useEffect(() => {
-    handleSearch("");
+    fetchVacancies();
   }, []);
 
   return (
     <Router>
       <Navbar onSearch={handleSearch} />
       <Routes>
-        <Route path="/" element={<Main vacancies={vacancies} loading={loading} />} />
+        <Route
+          path="/"
+          element={
+            <Main
+              vacancies={vacancies}
+              loading={loading}
+              onFilterUpdate={handleFilterUpdate} // передаем функцию фильтрации
+            />
+          }
+        />
         <Route path="/responded" element={<Responded />} />
         <Route path="/Profile" element={<Profile />} />
         <Route path="/login" element={<Login />} />

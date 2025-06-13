@@ -1,12 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
-const Main = () => {
+const Main = ({ vacancies, loading, onFilterUpdate }) => {
   const navigate = useNavigate();
-
-  const [vacancies, setVacancies] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   const [showSidebar, setShowSidebar] = useState(false);
   const [salaryFrom, setSalaryFrom] = useState("");
@@ -14,24 +10,6 @@ const Main = () => {
 
   const [selectedWorkTimes, setSelectedWorkTimes] = useState([]);
   const [selectedWorkTypes, setSelectedWorkTypes] = useState([]);
-
-  useEffect(() => {
-    fetchVacancies();
-  }, []);
-
-  const fetchVacancies = async (query = "") => {
-    setLoading(true);
-    try {
-      const res = await axios.get(`/api/vacancies/${query}`);
-      const data = Array.isArray(res.data) ? res.data : res.data.results || [];
-      setVacancies(data);
-    } catch (err) {
-      alert("Ошибка при загрузке вакансий");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCheckboxChange = (value, list, setList) => {
     if (list.includes(value)) {
@@ -47,13 +25,22 @@ const Main = () => {
     const from = salaryFrom || 0;
     const to = salaryTo || 1000000;
 
-    const workTimeParams = selectedWorkTimes.map((t) => `work_time=${encodeURIComponent(t)}`).join("&");
-    const workTypeParams = selectedWorkTypes.map((t) => `work_type=${encodeURIComponent(t)}`).join("&");
+    const workTimeParams = selectedWorkTimes
+      .map((t) => `work_time=${encodeURIComponent(t)}`)
+      .join("&");
+    const workTypeParams = selectedWorkTypes
+      .map((t) => `work_type=${encodeURIComponent(t)}`)
+      .join("&");
 
-    const query = `?salary__gte=${from}&salary__lte=${to}&${workTimeParams}&${workTypeParams}`;
+    // Формируем запрос с фильтрами
+    let query = `?salary__gte=${from}&salary__lte=${to}`;
+    if (workTimeParams) query += `&${workTimeParams}`;
+    if (workTypeParams) query += `&${workTypeParams}`;
 
-    await fetchVacancies(query);
-    console.log("Фильтрация применена:", query);
+    if (onFilterUpdate) {
+      await onFilterUpdate(query);
+    }
+
     setShowSidebar(false);
   };
 
@@ -66,7 +53,7 @@ const Main = () => {
         ☰ Фильтр
       </button>
 
-      {/* Сайдбар */}
+      {/* Сайдбар фильтров */}
       <div
         className={`position-fixed top-0 start-0 bg-light h-100 p-4 shadow ${
           showSidebar ? "d-block" : "d-none"
@@ -75,7 +62,6 @@ const Main = () => {
       >
         <h5>Фильтрация</h5>
         <form onSubmit={handleFilter}>
-          {/* Зарплата */}
           <div className="mb-3">
             <label className="form-label">Зарплата от:</label>
             <input
@@ -95,7 +81,6 @@ const Main = () => {
             />
           </div>
 
-          {/* График работы */}
           <div className="mb-3">
             <label className="form-label">График работы:</label>
             <div className="form-check">
@@ -104,7 +89,11 @@ const Main = () => {
                 type="checkbox"
                 value="Полный рабочий день"
                 onChange={() =>
-                  handleCheckboxChange("Полный рабочий день", selectedWorkTimes, setSelectedWorkTimes)
+                  handleCheckboxChange(
+                    "Полный рабочий день",
+                    selectedWorkTimes,
+                    setSelectedWorkTimes
+                  )
                 }
                 checked={selectedWorkTimes.includes("Полный рабочий день")}
               />
@@ -116,7 +105,11 @@ const Main = () => {
                 type="checkbox"
                 value="Гибкий график"
                 onChange={() =>
-                  handleCheckboxChange("Гибкий график", selectedWorkTimes, setSelectedWorkTimes)
+                  handleCheckboxChange(
+                    "Гибкий график",
+                    selectedWorkTimes,
+                    setSelectedWorkTimes
+                  )
                 }
                 checked={selectedWorkTimes.includes("Гибкий график")}
               />
@@ -128,7 +121,11 @@ const Main = () => {
                 type="checkbox"
                 value="По выходным"
                 onChange={() =>
-                  handleCheckboxChange("По выходным", selectedWorkTimes, setSelectedWorkTimes)
+                  handleCheckboxChange(
+                    "По выходным",
+                    selectedWorkTimes,
+                    setSelectedWorkTimes
+                  )
                 }
                 checked={selectedWorkTimes.includes("По выходным")}
               />
@@ -136,7 +133,6 @@ const Main = () => {
             </div>
           </div>
 
-          {/* Тип работы */}
           <div className="mb-3">
             <label className="form-label">Тип занятости:</label>
             <div className="form-check">
@@ -145,7 +141,11 @@ const Main = () => {
                 type="checkbox"
                 value="Работа"
                 onChange={() =>
-                  handleCheckboxChange("Работа", selectedWorkTypes, setSelectedWorkTypes)
+                  handleCheckboxChange(
+                    "Работа",
+                    selectedWorkTypes,
+                    setSelectedWorkTypes
+                  )
                 }
                 checked={selectedWorkTypes.includes("Работа")}
               />
@@ -157,7 +157,11 @@ const Main = () => {
                 type="checkbox"
                 value="Практика"
                 onChange={() =>
-                  handleCheckboxChange("Практика", selectedWorkTypes, setSelectedWorkTypes)
+                  handleCheckboxChange(
+                    "Практика",
+                    selectedWorkTypes,
+                    setSelectedWorkTypes
+                  )
                 }
                 checked={selectedWorkTypes.includes("Практика")}
               />
@@ -178,13 +182,16 @@ const Main = () => {
         </form>
       </div>
 
-      {/* Вакансии */}
-      <div className="container my-5" style={{ marginLeft: showSidebar ? "310px" : "0" }}>
+      {/* Список вакансий */}
+      <div
+        className="container my-5"
+        style={{ marginLeft: showSidebar ? "310px" : "0" }}
+      >
         <h2 className="mb-4 text-center">Вакансии</h2>
 
         {loading ? (
           <p className="text-center">Загрузка...</p>
-        ) : !vacancies.length ? (
+        ) : vacancies.length === 0 ? (
           <p className="text-center">Вакансии не найдены.</p>
         ) : (
           <div className="row g-4">
