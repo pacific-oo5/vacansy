@@ -11,6 +11,7 @@ import Login from "./pages/login";
 import Register from "./pages/register";
 import Desc from "./pages/desc";
 import ProfileR from "./pages/profile_r";
+import Respond from "./pages/respond";
 import "./App.css";
 
 axios.defaults.baseURL = "https://quality-herring-fine.ngrok-free.app/";
@@ -90,6 +91,7 @@ function App() {
         <Route path="/Register" element={<Register />} />
         <Route path="/Desc/:id" element={<Desc />} />
         <Route path="/ProfileR" element={<ProfileR/>} />   
+        <Route path="/respond/:vacancyId" element={<Respond />} />
       </Routes>
     </Router>
   );

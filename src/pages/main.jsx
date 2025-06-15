@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Main = ({ vacancies, loading, onFilterUpdate }) => {
   const navigate = useNavigate();
@@ -7,7 +8,6 @@ const Main = ({ vacancies, loading, onFilterUpdate }) => {
   const [showSidebar, setShowSidebar] = useState(false);
   const [salaryFrom, setSalaryFrom] = useState("");
   const [salaryTo, setSalaryTo] = useState("");
-
   const [selectedWorkTimes, setSelectedWorkTimes] = useState([]);
   const [selectedWorkTypes, setSelectedWorkTypes] = useState([]);
 
@@ -32,7 +32,6 @@ const Main = ({ vacancies, loading, onFilterUpdate }) => {
       .map((t) => `work_type=${encodeURIComponent(t)}`)
       .join("&");
 
-    // Формируем запрос с фильтрами
     let query = `?salary__gte=${from}&salary__lte=${to}`;
     if (workTimeParams) query += `&${workTimeParams}`;
     if (workTypeParams) query += `&${workTypeParams}`;
@@ -83,90 +82,38 @@ const Main = ({ vacancies, loading, onFilterUpdate }) => {
 
           <div className="mb-3">
             <label className="form-label">График работы:</label>
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                value="Полный рабочий день"
-                onChange={() =>
-                  handleCheckboxChange(
-                    "Полный рабочий день",
-                    selectedWorkTimes,
-                    setSelectedWorkTimes
-                  )
-                }
-                checked={selectedWorkTimes.includes("Полный рабочий день")}
-              />
-              <label className="form-check-label">Полный рабочий день</label>
-            </div>
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                value="Гибкий график"
-                onChange={() =>
-                  handleCheckboxChange(
-                    "Гибкий график",
-                    selectedWorkTimes,
-                    setSelectedWorkTimes
-                  )
-                }
-                checked={selectedWorkTimes.includes("Гибкий график")}
-              />
-              <label className="form-check-label">Гибкий график</label>
-            </div>
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                value="По выходным"
-                onChange={() =>
-                  handleCheckboxChange(
-                    "По выходным",
-                    selectedWorkTimes,
-                    setSelectedWorkTimes
-                  )
-                }
-                checked={selectedWorkTimes.includes("По выходным")}
-              />
-              <label className="form-check-label">По выходным</label>
-            </div>
+            {["Полный рабочий день", "Гибкий график", "По выходным"].map((time) => (
+              <div className="form-check" key={time}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  value={time}
+                  onChange={() =>
+                    handleCheckboxChange(time, selectedWorkTimes, setSelectedWorkTimes)
+                  }
+                  checked={selectedWorkTimes.includes(time)}
+                />
+                <label className="form-check-label">{time}</label>
+              </div>
+            ))}
           </div>
 
           <div className="mb-3">
             <label className="form-label">Тип занятости:</label>
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                value="Работа"
-                onChange={() =>
-                  handleCheckboxChange(
-                    "Работа",
-                    selectedWorkTypes,
-                    setSelectedWorkTypes
-                  )
-                }
-                checked={selectedWorkTypes.includes("Работа")}
-              />
-              <label className="form-check-label">Работа</label>
-            </div>
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                value="Практика"
-                onChange={() =>
-                  handleCheckboxChange(
-                    "Практика",
-                    selectedWorkTypes,
-                    setSelectedWorkTypes
-                  )
-                }
-                checked={selectedWorkTypes.includes("Практика")}
-              />
-              <label className="form-check-label">Практика</label>
-            </div>
+            {["Работа", "Практика"].map((type) => (
+              <div className="form-check" key={type}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  value={type}
+                  onChange={() =>
+                    handleCheckboxChange(type, selectedWorkTypes, setSelectedWorkTypes)
+                  }
+                  checked={selectedWorkTypes.includes(type)}
+                />
+                <label className="form-check-label">{type}</label>
+              </div>
+            ))}
           </div>
 
           <button className="btn btn-primary w-100 mt-3" type="submit">
@@ -191,9 +138,9 @@ const Main = ({ vacancies, loading, onFilterUpdate }) => {
 
         {loading ? (
           <p className="text-center">Загрузка...</p>
-        ) : vacancies.length === 0 ? (
+        ) : Array.isArray(vacancies) && vacancies.length === 0 ? (
           <p className="text-center">Вакансии не найдены.</p>
-        ) : (
+        ) : Array.isArray(vacancies) ? (
           <div className="row g-4">
             {vacancies.map((v) => (
               <div key={v.id} className="col-md-6 col-lg-4">
@@ -217,7 +164,32 @@ const Main = ({ vacancies, loading, onFilterUpdate }) => {
                       </button>
                       <button
                         className="btn btn-success"
-                        onClick={() => alert(`Отклик на вакансию: ${v.name}`)}
+                        onClick={async () => {
+                          try {
+                            const token = localStorage.getItem("token");
+                            if (!token) {
+                              alert("Пожалуйста, войдите в аккаунт");
+                              return;
+                            }
+
+                            await axios.post(
+                              `https://quality-herring-fine.ngrok-free.app/api/vacancies/${v.id}/respond/`,
+                              {},
+                              {
+                                headers: {
+                                  Authorization: `Bearer ${token}`,
+                                },
+                              }
+                            );
+                            alert("Отклик успешно отправлен!");
+                          } catch (err) {
+                            console.error(err);
+                            alert(
+                              "Ошибка при отклике: " +
+                                (err.response?.data?.detail || "Неизвестная ошибка")
+                            );
+                          }
+                        }}
                       >
                         Откликнуться
                       </button>
@@ -227,6 +199,10 @@ const Main = ({ vacancies, loading, onFilterUpdate }) => {
               </div>
             ))}
           </div>
+        ) : (
+          <p className="text-center text-danger">
+            Ошибка: вакансии не в виде массива.
+          </p>
         )}
       </div>
     </div>
