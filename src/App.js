@@ -5,13 +5,18 @@ import axios from "axios";
 
 import Navbar from "./pages/navbar";
 import Main from "./pages/main";
-import Responded from "./pages/responded";
-import Profile from "./pages/profile";
-import Login from "./pages/login";
-import Register from "./pages/register";
-import Desc from "./pages/desc";
-import ProfileR from "./pages/profile_r";
-import Respond from "./pages/respond";
+import Responded from "./pages/status/responded";
+import CreateVac from "./pages/createVac";
+import CreateAnk  from "./pages/createAnk";
+import Login from "./pages/auth/login";
+import Register from "./pages/auth/register";
+import Desc from "./pages/desc/desc";
+import Respond from "./pages/status/respond";
+import ProfileS from "./pages/ProfileS"
+import A_desc from "./pages/desc/A_desc"
+import A_descForW from "./pages/desc/A_descForW"
+import Desc_R from "./pages/desc/Desc_R"
+
 import "./App.css";
 
 axios.defaults.baseURL = "https://quality-herring-fine.ngrok-free.app/";
@@ -86,12 +91,17 @@ function App() {
           }
         />
         <Route path="/responded" element={<Responded />} />
-        <Route path="/Profile" element={<Profile />} />
+        <Route path="/CreateVac" element={<CreateVac />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/Register" element={<Register />} />
-        <Route path="/Desc/:id" element={<Desc />} />
-        <Route path="/ProfileR" element={<ProfileR/>} />   
-        <Route path="/respond/:vacancyId" element={<Respond />} />
+        <Route path="/CreateAnk" element={<CreateAnk/>} />
+        <Route path="/Register" element={<Register/>} />
+        <Route path="/Desc/:vacancyId" element={<Desc />} />
+         <Route path="/ProfileS" element={<ProfileS/>} /> 
+         <Route path="/DescR/:vacancyId" element={<Desc_R/>} /> 
+       <Route path="/respond/:vacancyId" element={<Respond />} />
+       <Route path="/A_desc/:id" element={<A_desc />} />
+  <Route path="/Responded" element={<Responded />} />
+<Route path="/A_descForW/:username/:id" element={<A_descForW />} />
       </Routes>
     </Router>
   );

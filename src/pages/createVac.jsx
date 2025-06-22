@@ -28,7 +28,7 @@ const CreateVacancy = () => {
     const token = localStorage.getItem('token');
     try {
       await axios.post(
-        'https://quality-herring-fine.ngrok-free.app/api/vacancies/create/',
+        'https://quality-herring-fine.ngrok-free.app/api/my/vacancies/',
         form,
         {
           headers: {
@@ -80,7 +80,7 @@ const CreateVacancy = () => {
         <div className="col-md-6">
           <select className="form-select" name="work_time" onChange={handleChange}>
             <option value="Гибкий график">Гибкий график</option>
-            <option value="Польный рабочий день">Польный рабочий день</option>
+            <option value="Полный рабочий день">Полный рабочий день</option>
             <option value="По выходным">По выходным</option>
           </select>
         </div>
