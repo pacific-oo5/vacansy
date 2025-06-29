@@ -1,25 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Row, Col, Card, Button, Spinner, Alert } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from 'react-router-dom';
 
 function MyProfile() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+
     useEffect(() => {
         const fetchMyData = async () => {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                // ❗ Перенаправляем на логин, если нет токена
+                navigate("/login");
+                return;
+            }
+
             try {
-                const token = localStorage.getItem("token");
-
-                if (!token) {
-                    setError('Токен не найден. Пожалуйста, авторизуйтесь.');
-                    setLoading(false);
-                    return;
-                }
-
                 const response = await axios.get('https://quality-herring-fine.ngrok-free.app/api/my/', {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -36,7 +36,7 @@ function MyProfile() {
         };
 
         fetchMyData();
-    }, []);
+    }, [navigate]);
 
     if (loading) {
         return (
@@ -48,15 +48,26 @@ function MyProfile() {
         );
     }
 
-    if (error) {
-        return (
-            <Container className="mt-5">
-                <Alert variant="danger">{error}</Alert>
-            </Container>
-        );
-    }
+   if (error) {
+    return (
+        <Container className="mt-5 text-center">
+            <Alert variant="danger">
+                <h4>Не удалось загрузить данные профиля.</h4>
+                <p>Пожалуйста, убедитесь, что вы авторизованы.</p>
+                <div className="d-flex justify-content-center gap-3 mt-3">
+                    <Link to="/login" className="btn btn-primary">
+                        Войти
+                    </Link>
+                    <Link to="/register" className="btn btn-outline-secondary">
+                        Зарегистрироваться
+                    </Link>
+                </div>
+            </Alert>
+        </Container>
+    );
+}
 
-    // Проверяем, являются ли данные о вакансиях или анкетах
+
     const isEmployer = data && data.vacancies;
 
     return (
@@ -80,26 +91,27 @@ function MyProfile() {
                                                 <strong>Город:</strong> {vacancy.city || 'Не указан'}
                                                 {vacancy.is_remote && ' (Удаленно)'}
                                             </Card.Text>
-                                       <button
-                    className="btn btn-primary"
-                    onClick={() => navigate(`/DescR/${vacancy.id}`)}
-                  >
-                    Подробнее
-                  </button>
-                      <button
-                    className="btn btn-outline-success"
-                    onClick={() => navigate(`/respond/${vacancy.id}`)}
-                  >
-                    Откликнувшиеся
-                  </button>
-                                     
+                                            <button
+                                                className="btn btn-primary"
+                                                onClick={() => navigate(`/DescR/${vacancy.id}`)}
+                                            >
+                                                Подробнее
+                                            </button>
+                                            <button
+                                                className="btn btn-outline-success"
+                                                onClick={() => navigate(`/respond/${vacancy.id}`)}
+                                            >
+                                                Откликнувшиеся
+                                            </button>
                                         </Card.Body>
                                     </Card>
                                 </Col>
                             ))}
                         </Row>
                     ) : (
-                        <Alert variant="info">У вас пока нет активных вакансий. <Link to="/createVac">Создать вакансию</Link></Alert>
+                        <Alert variant="info">
+                            У вас пока нет активных вакансий. <Link to="/createVac">Создать вакансию</Link>
+                        </Alert>
                     )}
                 </>
             ) : (
@@ -118,26 +130,27 @@ function MyProfile() {
                                             <Card.Text>
                                                 <strong>Город:</strong> {anketa.city || 'Не указан'}
                                             </Card.Text>
-                                    
-                                               <button
-                    className="btn btn-primary"
-                    onClick={() => navigate(`/A_desc/${anketa.id}/`)}
-                  >
-                    Подробнее
-                  </button>
-                  
+                                            <button
+                                                className="btn btn-primary"
+                                                onClick={() => navigate(`/A_desc/${anketa.id}/`)}
+                                            >
+                                                Подробнее
+                                            </button>
                                         </Card.Body>
                                     </Card>
                                 </Col>
                             ))}
                         </Row>
                     ) : (
-                        <Alert variant="info">У вас пока нет активных анкет.     <button
-                    className="btn btn-primary"
-                    onClick={() => navigate(`/createAnk`)}
-                  >
-                    Подробнее
-                  </button></Alert>
+                        <Alert variant="info">
+                            У вас пока нет активных анкет.
+                            <button
+                                className="btn btn-primary ms-2"
+                                onClick={() => navigate(`/createAnk`)}
+                            >
+                                Подробнее
+                            </button>
+                        </Alert>
                     )}
                 </>
             )}

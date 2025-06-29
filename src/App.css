@@ -1,6 +1,31 @@
-.App {
-  text-align: center;
+/* ====== Общие стили и оформление ====== */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* ====== Контейнер приложения — растягивается по высоте ====== */
+
+.App {
+  flex: 1;               /* Занимает доступное место */
+  display: flex;
+  flex-direction: column;
+  text-align: center;    /* твой текущий стиль */
+  min-height: 0;         /* Для корректной работы flex */
+}
+
+/* ====== Анимация логотипа ====== */
 
 .App-logo {
   height: 40vmin;
@@ -13,9 +38,20 @@
   }
 }
 
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ====== Заголовок и основной блок ====== */
+
 .App-header {
   background-color: #282c34;
-  min-height: 100vh;
+  min-height: 100vh; /* Можно убрать или заменить на 100% если нужен адаптив */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,15 +60,45 @@
   color: white;
 }
 
+/* ====== Ссылки ====== */
+
 .App-link {
   color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* ====== Стили для футера (если он в отдельном компоненте или inline) ====== */
+
+footer {
+  background-color: #222;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+  margin-top: auto; /* Важно: толкает футер вниз, если мало контента */
+  font-size: 0.9rem;
+}
+
+footer a {
+  color: #ddd;
+  margin: 0 10px;
+  text-decoration: none;
+}
+
+footer a:hover {
+  color: white;
+}
+
+footer h3 {
+  margin-bottom: 10px;
+}
+
+footer p {
+  margin: 5px 0;
+}
+
+/* Если футер содержит соцсети, ссылки и контакты */
+
+footer .footer-links,
+footer .footer-contacts,
+footer .footer-social {
+  margin: 10px 0;
 }
